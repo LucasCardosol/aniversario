@@ -1,4 +1,5 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
 # Instalar dependências do sistema
 RUN apk add --no-cache python3 make g++
@@ -6,21 +7,43 @@ RUN apk add --no-cache python3 make g++
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json primeiro para cache de dependências
+# Copiar package.json para cache de dependências
 COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Instalar dependências do backend
-RUN npm install --omit=dev
+RUN npm ci --only=production
 
 # Instalar dependências do frontend
-RUN cd client && npm install
+RUN cd client && npm ci
 
-# Copiar todo o código fonte
+# Copiar código fonte
 COPY . .
 
 # Build do React
 RUN cd client && npm run build
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Instalar dependências do sistema
+RUN apk add --no-cache python3 make g++
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar package.json
+COPY package*.json ./
+
+# Instalar apenas dependências de produção
+RUN npm ci --only=production
+
+# Copiar código do backend
+COPY server.js ./
+COPY config.js ./
+
+# Copiar build do React
+COPY --from=builder /app/client/build ./client/build
 
 # Expor porta
 EXPOSE 5000
