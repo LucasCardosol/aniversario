@@ -7,15 +7,15 @@ RUN apk add --no-cache python3 make g++
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json para cache de dependências
+# Copiar package.json e package-lock.json para cache de dependências
 COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Instalar dependências do backend
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Instalar dependências do frontend
-RUN cd client && npm ci
+RUN cd client && npm install
 
 # Copiar código fonte
 COPY . .
@@ -32,11 +32,11 @@ RUN apk add --no-cache python3 make g++
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json
+# Copiar package.json e package-lock.json
 COPY package*.json ./
 
 # Instalar apenas dependências de produção
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copiar código do backend
 COPY server.js ./
