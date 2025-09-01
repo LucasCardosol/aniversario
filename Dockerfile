@@ -6,12 +6,12 @@ RUN apk add --no-cache python3 make g++
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json e package-lock.json
+# Copiar package.json
 COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Instalar dependências do backend
-RUN npm install --omit=dev
+RUN npm install
 
 # Instalar dependências do frontend
 RUN cd client && npm install
